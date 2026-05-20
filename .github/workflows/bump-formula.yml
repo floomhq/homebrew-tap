@@ -1,0 +1,54 @@
+name: Bump floom formula
+
+# Triggered via repository_dispatch from floomhq/floom-mvp publish-cli workflow.
+# Expected payload: { version: "2.0.4", sha256: "<sha256 of npm tarball>" }
+
+on:
+  repository_dispatch:
+    types: [cli-release]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New CLI version (e.g. 2.0.4)'
+        required: true
+      sha256:
+        description: 'SHA256 of the npm tarball'
+        required: true
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.HOMEBREW_TAP_PAT }}
+
+      - name: Resolve inputs
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "version=${{ github.event.client_payload.version }}" >> "$GITHUB_OUTPUT"
+            echo "sha256=${{ github.event.client_payload.sha256 }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+            echo "sha256=${{ github.event.inputs.sha256 }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Bump version and sha256 in formula
+        run: |
+          VERSION="${{ steps.vars.outputs.version }}"
+          SHA256="${{ steps.vars.outputs.sha256 }}"
+          sed -i \
+            -e "s|floom-[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.tgz|floom-${VERSION}.tgz|g" \
+            -e "s|sha256 \"[a-f0-9]\{64\}\"|sha256 \"${SHA256}\"|g" \
+            -e "s|assert_match \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\"|assert_match \"${VERSION}\"|g" \
+            Formula/floom.rb
+          grep "url\|sha256\|assert_match" Formula/floom.rb
+
+      - name: Commit and push
+        run: |
+          git config user.name "floom-bot"
+          git config user.email "bot@floom.dev"
+          git add Formula/floom.rb
+          git commit -m "floom ${{ steps.vars.outputs.version }}"
+          git push
