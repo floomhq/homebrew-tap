@@ -5,8 +5,6 @@ class Floom < Formula
   sha256 "ac23b75b79c1624af61ed0c3ae1a1c65471ef50ecb0d64b3b6614a8b8beeb03a"
   license "MIT"
 
-  bottle :unneeded
-
   depends_on "node"
 
   def install
