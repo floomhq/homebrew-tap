@@ -1,8 +1,8 @@
 class Floom < Formula
   desc "One shared skill library, synced across every AI agent (Claude, Codex, Cursor, Gemini)"
   homepage "https://floom.dev"
-  url "https://registry.npmjs.org/@floomhq/floom/-/floom-2.0.7.tgz"
-  sha256 "694c095b77d8ac997dff895c6d7b05e15cfc5bb465bb7421b63175b9dd2d62e0"
+  url "https://registry.npmjs.org/@floomhq/floom/-/floom-3.0.0.tgz"
+  sha256 "0a2a115ade87695db6cbbe995503fa229f8ef98caa2fe69d73b90819fdc20cf4"
   license "MIT"
 
   depends_on "node"
@@ -14,6 +14,6 @@ class Floom < Formula
 
   test do
     output = shell_output("#{bin}/floom --version")
-    assert_match "2.0.7", output
+    assert_match "3.0.0", output
   end
 end
